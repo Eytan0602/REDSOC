@@ -1,0 +1,175 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+/* styles.css o styles.scss */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE y Edge */
+  scrollbar-width: none;     /* Firefox */
+}
+/* estilos base */
+body {
+  @apply bg-dark-bg text-white;
+}
+
+/* tema claro */
+html.light-theme body {
+  @apply bg-white-smoke text-gray-800;
+}
+
+/* ejemplo de tarjetas */
+.card {
+  @apply bg-dark-card border-dark-border rounded-lg p-4;
+}
+html.light-theme .card {
+  @apply bg-white-smoke border-gray-300 text-gray-800;
+}
+/* =============================================== */
+/* TEMA CLARO - AGREGAR AL FINAL DE styles.css   */
+/* =============================================== */
+
+:root.light-theme {
+  /* Colores principales */
+  --primary: #8B5CF6;
+  --primary-dark: #7C3AED;
+  --primary-light: #A78BFA;
+  
+  /* Backgrounds */
+  --dark-bg: #F9FAFB;
+  --dark-card: #FFFFFF;
+  --dark-hover: #F3F4F6;
+  --dark-border: #E5E7EB;
+  
+  /* Textos */
+  --white: #111827;
+  --gray-text: #4B5563;
+  --gray-secondary: #6B7280;
+}
+
+/* Aplicar colores del tema claro */
+.light-theme {
+  background-color: var(--dark-bg);
+  color: var(--white);
+}
+
+.light-theme .bg-dark-bg {
+  background-color: var(--dark-bg);
+}
+
+.light-theme .bg-dark-card {
+  background-color: var(--dark-card);
+}
+
+.light-theme .bg-dark-hover {
+  background-color: var(--dark-hover);
+}
+
+.light-theme .border-dark-border {
+  border-color: var(--dark-border);
+}
+
+.light-theme .text-white {
+  color: var(--white);
+}
+
+.light-theme .text-gray-text {
+  color: var(--gray-text);
+}
+
+.light-theme .text-gray-secondary {
+  color: var(--gray-secondary);
+}
+
+.light-theme .placeholder-gray-secondary::placeholder {
+  color: var(--gray-secondary);
+}
+
+/* Sombras ajustadas para tema claro */
+.light-theme .shadow-lg,
+.light-theme .shadow-xl,
+.light-theme .shadow-2xl {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 
+              0 4px 6px -4px rgba(0, 0, 0, 0.1);
+}
+
+/* Backdrop para modales en tema claro */
+.light-theme .bg-black\/80 {
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.light-theme .bg-black\/70 {
+  background-color: rgba(0, 0, 0, 0.4);
+}
+
+/* Ajustes especiales para inputs */
+.light-theme input,
+.light-theme textarea,
+.light-theme select {
+  background-color: var(--dark-bg);
+  color: var(--white);
+  border-color: var(--dark-border);
+}
+
+.light-theme input:focus,
+.light-theme textarea:focus,
+.light-theme select:focus {
+  border-color: var(--primary);
+  background-color: var(--dark-card);
+}
+
+/* Scrollbar para tema claro */
+.light-theme ::-webkit-scrollbar-track {
+  background: var(--dark-bg);
+}
+
+.light-theme ::-webkit-scrollbar-thumb {
+  background: var(--dark-border);
+}
+
+.light-theme ::-webkit-scrollbar-thumb:hover {
+  background: var(--gray-secondary);
+}
+
+/* Ajustes para elementos con gradientes */
+.light-theme .from-primary\/10 {
+  --tw-gradient-from: rgba(139, 92, 246, 0.08);
+}
+
+.light-theme .from-primary\/20 {
+  --tw-gradient-from: rgba(139, 92, 246, 0.15);
+}
+
+.light-theme .from-primary\/30 {
+  --tw-gradient-from: rgba(139, 92, 246, 0.25);
+}
+
+/* Ajustes para elementos especiales */
+.light-theme .animate-pulse {
+  animation: pulse-light 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse-light {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+/* Transiciones suaves al cambiar de tema */
+* {
+  transition: background-color 0.3s ease, 
+              color 0.3s ease, 
+              border-color 0.3s ease;
+}
+
+/* Excepciones donde no queremos transición */
+.no-theme-transition,
+.no-theme-transition * {
+  transition: none !important;
+}
