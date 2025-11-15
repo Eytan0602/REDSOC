@@ -1,0 +1,30 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+/* styles.css o styles.scss */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE y Edge */
+  scrollbar-width: none;     /* Firefox */
+}
+/* estilos base */
+body {
+  @apply bg-dark-bg text-white;
+}
+
+/* tema claro */
+html.light-theme body {
+  @apply bg-white-smoke text-gray-800;
+}
+
+/* ejemplo de tarjetas */
+.card {
+  @apply bg-dark-card border-dark-border rounded-lg p-4;
+}
+html.light-theme .card {
+  @apply bg-white-smoke border-gray-300 text-gray-800;
+}

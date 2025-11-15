@@ -1,0 +1,5 @@
+backend/firebase-config.json
+backend/.env
+backend/firebase-config.json
+node_modules/
+backend/node_modules/
