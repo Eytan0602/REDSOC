@@ -178,13 +178,14 @@ export class MessagesComponent implements OnInit {
   selectedConversation: any = null;
   messages: any[] = [];
   newMessage = '';
-  currentUserId: number = 0;
+  currentUserId: string = '';  // ← CAMBIO: string en lugar de number
   
   loadingConversations = false;
   loadingMessages = false;
   sendingMessage = false;
+
   ngOnInit() {
-    this.currentUserId = this.authService.currentUser()?.id || 0;
+    this.currentUserId = this.authService.currentUser()?.id || '';  // ← CAMBIO: '' en lugar de 0
     this.loadConversations();
     
     // ⭐ DETECTAR SI VIENE DESDE UN PERFIL
@@ -245,14 +246,9 @@ export class MessagesComponent implements OnInit {
   selectConversation(conversation: any) {
     this.selectedConversation = conversation;
     this.loadMessages(conversation.id);
-    
-    // ⭐ Actualizar contador de no leídos después de seleccionar conversación
-    setTimeout(() => {
-      this.messageService.refreshUnreadCount();
-    }, 500);
   }
 
-  selectConversationById(conversationId: number, otherUserId: number) {
+  selectConversationById(conversationId: string, otherUserId: string) {  // ← CAMBIO: parámetros string
     // Recargar conversaciones y seleccionar
     this.messageService.getConversations().subscribe({
       next: (conversations) => {
@@ -265,7 +261,7 @@ export class MessagesComponent implements OnInit {
     });
   }
 
-  loadMessages(conversationId: number) {
+  loadMessages(conversationId: string) {  // ← CAMBIO: parámetro string
     this.loadingMessages = true;
     this.messages = [];
     
@@ -276,9 +272,6 @@ export class MessagesComponent implements OnInit {
         
         // Scroll al final después de cargar mensajes
         setTimeout(() => this.scrollToBottom(), 100);
-        
-        // ⭐ Actualizar contador después de ver mensajes
-        this.messageService.refreshUnreadCount();
       },
       error: (err) => {
         console.error('Error al cargar mensajes:', err);

@@ -17,11 +17,17 @@ export class PostService {
     return this.http.post<any>(`${this.API_URL}/posts`, { content });
   }
 
-  getComments(postId: number) {
+  getComments(postId: string) {
     return this.http.get<any[]>(`${this.API_URL}/comments/${postId}`);
   }
-
-  createComment(post_id: number, text: string) {
+deletePost(postId: string) {
+  const token = localStorage.getItem('token');
+  console.log('Token:', token ? 'Existe' : 'NO EXISTE');
+  console.log('Eliminando post:', postId);
+  
+  return this.http.delete<any>(`${this.API_URL}/posts/${postId}`);
+}
+  createComment(post_id: string, text: string) {
     return this.http.post<any>(`${this.API_URL}/comments`, { post_id, text });
   }
 }

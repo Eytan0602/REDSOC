@@ -36,7 +36,7 @@ import { switchMap } from 'rxjs/operators';
             <div class="flex items-center space-x-3">
               <div class="relative">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                 </svg>
                 @if (unreadCount > 0) {
                   <span class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-dark-card animate-pulse"></span>
@@ -51,6 +51,8 @@ import { switchMap } from 'rxjs/operators';
             }
           </a>
         }
+
+        
 
         <a routerLink="/about" routerLinkActive="bg-dark-hover text-primary"
            class="flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-text hover:bg-dark-hover hover:text-white transition">
@@ -94,57 +96,38 @@ export class SidebarComponent implements OnInit, OnDestroy {
   
   unreadCount = 0;
   private pollSubscription?: Subscription;
-  private unreadSubscription?: Subscription;
-  private loginSubscription?: Subscription;
 
   ngOnInit() {
-    console.log('🔧 SidebarComponent inicializado');
-    
-    //  FIXED: Suscribirse a eventos de login
-    this.loginSubscription = this.authService.onLogin$.subscribe(() => {
-      console.log('🎉 Login detectado en Sidebar, cargando mensajes...');
-      this.setupMessageTracking();
-    });
-
-    // Si ya está autenticado al cargar el componente
+    // Solo cargar contador si está autenticado
     if (this.authService.isAuthenticated()) {
-      console.log('Usuario ya autenticado, iniciando tracking');
-      this.setupMessageTracking();
+      this.checkUnreadMessages();
+      
+      // Actualizar cada 10 segundos
+      this.pollSubscription = interval(10000)
+        .pipe(switchMap(() => this.messageService.getUnreadCount()))
+        .subscribe({
+          next: (data) => {
+            this.unreadCount = data.count || 0;
+            console.log('📬 Mensajes no leídos:', this.unreadCount);
+          },
+          error: (err) => console.error('Error polling unread messages:', err)
+        });
     }
-  }
-
-  //  Método separado para configurar el tracking de mensajes
-  private setupMessageTracking() {
-    // Suscribirse al observable compartido del contador
-    this.unreadSubscription = this.messageService.unreadCount$.subscribe({
-      next: (count) => {
-        this.unreadCount = count;
-        console.log('📬 Mensajes no leídos actualizados en Sidebar:', count);
-      }
-    });
-
-    // Cargar el contador inicial
-    this.messageService.refreshUnreadCount();
-    
-    // Actualizar cada 10 segundos
-    this.pollSubscription = interval(10000)
-      .pipe(switchMap(() => this.messageService.getUnreadCount()))
-      .subscribe({
-        error: (err) => console.error(' Error polling unread messages:', err)
-      });
   }
 
   ngOnDestroy() {
-    console.log('SidebarComponent destruido, limpiando suscripciones');
-    
     if (this.pollSubscription) {
       this.pollSubscription.unsubscribe();
     }
-    if (this.unreadSubscription) {
-      this.unreadSubscription.unsubscribe();
-    }
-    if (this.loginSubscription) {
-      this.loginSubscription.unsubscribe();
-    }
+  }
+
+  checkUnreadMessages() {
+    this.messageService.getUnreadCount().subscribe({
+      next: (data) => {
+        this.unreadCount = data.count || 0;
+        console.log('📬 Mensajes no leídos (inicial):', this.unreadCount);
+      },
+      error: (err) => console.error('Error checking unread messages:', err)
+    });
   }
 }

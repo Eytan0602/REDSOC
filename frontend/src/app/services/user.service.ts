@@ -49,24 +49,24 @@ export class UserService {
   }
 
   // Obtener perfil de otro usuario por id
-  getUser(id: number): Observable<any> {
+  getUser(id: string): Observable<any> {
     const headers = this.getHeaders();
     return this.http.get<any>(`${this.API_URL}/users/${id}`, headers);
   }
 
-  followUser(id: number): Observable<any> {
+  followUser(id: string): Observable<any> {
     return this.http.post<any>(`${this.API_URL}/follow/${id}`, {}, this.getHeaders());
   }
 
-  unfollowUser(id: number): Observable<any> {
+  unfollowUser(id: string): Observable<any> {
     return this.http.delete<any>(`${this.API_URL}/follow/${id}`, this.getHeaders());
   }
 
-  getFollowers(id: number): Observable<any[]> {
+  getFollowers(id: string): Observable<any[]> {
     return this.http.get<any[]>(`${this.API_URL}/users/${id}/followers`);
   }
 
-  getFollowing(id: number): Observable<any[]> {
+  getFollowing(id: string): Observable<any[]> {
     return this.http.get<any[]>(`${this.API_URL}/users/${id}/following`);
   }
 }

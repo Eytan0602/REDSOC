@@ -280,7 +280,8 @@ import { MessageService } from '../../services/message.service';
                         <p class="text-gray-secondary text-sm">&#64;{{ user.username }} · {{ formatDate(post.created_at) }}</p>
                       </div>
                       @if (isOwnProfile) {
-                        <button class="text-gray-text hover:text-red-500 transition">
+                        <button (click)="deletePost(post.id)"
+                        class="text-gray-text hover:text-red-500 transition">
                           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                           </svg>
@@ -683,8 +684,8 @@ export class ProfileComponent implements OnInit {
   showFollowingModal = false;
   followers: any[] = [];
   followingList: any[] = [];
-  expandedPosts = new Set<number>();
-  postComments = new Map<number, any[]>();
+  expandedPosts = new Set<string>();
+  postComments = new Map<string, any[]>();
   commentText = '';
   private API_URL = 'http://localhost:3000/api';
   
@@ -712,7 +713,7 @@ export class ProfileComponent implements OnInit {
     this.route.params.subscribe(params => {
       const userId = params['id'];
       if (userId) {
-        this.loadUser(Number(userId));
+        this.loadUser(userId);
       } else {
         this.loadOwnProfile();
       }
@@ -736,7 +737,7 @@ export class ProfileComponent implements OnInit {
     }
   }
 
-  loadUser(id: number) {
+  loadUser(id: string) {
     this.userService.getUser(id).subscribe({
       next: (data) => {
         this.user = data;
@@ -749,7 +750,7 @@ export class ProfileComponent implements OnInit {
     });
   }
 
-  loadUserProjects(userId: number) {
+  loadUserProjects(userId: string) {
     this.http.get<any[]>(`${this.API_URL}/projects`).subscribe({
       next: (projects) => {
         this.userProjects = projects.filter(p => p.user_id === userId);
@@ -758,7 +759,7 @@ export class ProfileComponent implements OnInit {
     });
   }
 
-  loadUserReposts(userId: number) {
+  loadUserReposts(userId: string) {
     this.http.get<any[]>(`${this.API_URL}/users/${userId}/reposts`).subscribe({
       next: (reposts) => {
         this.userReposts = reposts;
@@ -767,14 +768,14 @@ export class ProfileComponent implements OnInit {
     });
   }
 
-  loadFollowers(id: number) {
+  loadFollowers(id: string) {
     this.userService.getFollowers(id).subscribe({
       next: (data) => this.followers = data,
       error: (err) => console.error('Error loading followers:', err)
     });
   }
 
-  loadFollowing(id: number) {
+  loadFollowing(id: string) {
     this.userService.getFollowing(id).subscribe({
       next: (data) => this.followingList = data,
       error: (err) => console.error('Error loading following:', err)
@@ -803,23 +804,36 @@ export class ProfileComponent implements OnInit {
     });
   }
 
-  toggleComments(postId: number) {
+  toggleComments(postId: string) {
     if (this.expandedPosts.has(postId)) {
-      this.expandedPosts.delete(postId);
     } else {
       this.expandedPosts.add(postId);
       this.loadComments(postId);
     }
   }
-
-  loadComments(postId: number) {
+deletePost(postId: string): void {
+  if (confirm('¿Estás seguro de que deseas eliminar este post?')) {
+    this.postService.deletePost(postId).subscribe({
+      next: () => {
+        // Eliminar del array local
+        this.userPosts = this.userPosts.filter(p => p.id !== postId);
+        console.log('Post eliminado');
+      },
+      error: (err: any) => {
+        console.error('Error al eliminar:', err);
+        alert('Error al eliminar el post');
+      }
+    });
+  }
+}
+  loadComments(postId: string) {
     this.postService.getComments(postId).subscribe({
       next: (comments) => this.postComments.set(postId, comments),
       error: (err) => console.error('Error loading comments:', err)
     });
   }
 
-  addComment(postId: number) {
+  addComment(postId: string) {
     if (!this.commentText.trim()) return;
 
     this.postService.createComment(postId, this.commentText).subscribe({
@@ -864,3 +878,4 @@ export class ProfileComponent implements OnInit {
     });
   }
 }
+       

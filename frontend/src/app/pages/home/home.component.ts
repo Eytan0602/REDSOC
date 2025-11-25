@@ -5,12 +5,11 @@ import { RouterLink } from '@angular/router';
 import { PostService } from '../../services/post.service';
 import { AuthService } from '../../services/auth.service';
 import { HttpClient } from '@angular/common/http';
-import { MentionDropdownComponent } from '../../components/mention-dropdown/mention-dropdown.component';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-imports: [CommonModule, FormsModule, RouterLink, MentionDropdownComponent],
+  imports: [CommonModule, FormsModule, RouterLink],
   template: `
     <div class="min-h-screen bg-dark-bg">
       <!-- Hero Section -->
@@ -63,19 +62,10 @@ imports: [CommonModule, FormsModule, RouterLink, MentionDropdownComponent],
                       </div>
                     </ng-template>
 
-                  <div class="relative">
-                       <textarea [(ngModel)]="newPost" 
-                        name="newPost"
-                        (input)="onPostInputChange($event)"
-                        placeholder="Comparte algo interesante con la comunidad..."
-                        class="w-full px-4 py-3 bg-dark-bg border border-dark-border rounded-xl text-white placeholder-gray-secondary focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none resize-none transition"
-                        rows="3"></textarea>
-                          @if (showMentionDropdown) {
-                        <app-mention-dropdown 
-                         [query]="mentionQuery"
-                         (userSelected)="onMentionSelected($event)">
-                        </app-mention-dropdown>
-                           }
+                    <div class="flex-1">
+                      <textarea [(ngModel)]="newPost" placeholder="Comparte algo interesante con la comunidad..."
+                                class="w-full px-4 py-3 bg-dark-bg border border-dark-border rounded-xl text-white placeholder-gray-secondary focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none resize-none transition"
+                                rows="3"></textarea>
                       <div class="mt-4 flex items-center justify-between">
                         <div class="flex space-x-2">
                           <button class="p-2 text-gray-text hover:text-primary hover:bg-primary/10 rounded-lg transition">
@@ -393,16 +383,14 @@ export class HomeComponent implements OnInit {
   postService = inject(PostService);
   authService = inject(AuthService);
   http = inject(HttpClient);
-showMentionDropdown = false;
-mentionQuery = '';
-cursorPosition = 0;
+
   private API_URL = 'http://localhost:3000/api';
 
   posts: any[] = [];
   newPost = '';
-  expandedPosts = new Set<number>();
-  postComments = new Map<number, any[]>();
-  commentTexts = new Map<number, string>();
+ expandedPosts = new Set<string>();
+postComments = new Map<string, any[]>();
+commentTexts = new Map<string, string>();
   trending: any[] = [];
   suggestions: any[] = [];
 
@@ -449,7 +437,7 @@ cursorPosition = 0;
     });
   }
 
-  toggleComments(postId: number) {
+  toggleComments(postId: string) {
     if (this.expandedPosts.has(postId)) {
       this.expandedPosts.delete(postId);
     } else {
@@ -458,32 +446,32 @@ cursorPosition = 0;
     }
   }
 
-  loadComments(postId: number) {
+  loadComments(postId: string) {
     this.postService.getComments(postId).subscribe({
       next: (comments) => this.postComments.set(postId, comments),
       error: (err) => console.error('Error loading comments:', err)
     });
   }
 
-  addComment(postId: number) {
-    const text = this.commentTexts.get(postId);
-    if (!text?.trim()) return;
+  addComment(postId: string) {
+  const text = this.commentTexts.get(postId);
+  if (!text?.trim()) return;
 
-    this.postService.createComment(postId, text).subscribe({
-      next: () => {
-        this.commentTexts.set(postId, '');
-        this.loadComments(postId);
-        // Actualizar contador
-        const post = this.posts.find(p => p.id === postId);
-        if (post) {
-          post.comments_count = (post.comments_count || 0) + 1;
-        }
-      },
-      error: (err) => alert(err.error?.message || 'Error al comentar')
-    });
-  }
+  this.postService.createComment(postId, text).subscribe({
+    next: () => {
+      this.commentTexts.set(postId, '');
+      this.loadComments(postId);
+      // Actualizar contador
+      const post = this.posts.find(p => p.id === postId);
+      if (post) {
+        post.comments_count = (post.comments_count || 0) + 1;
+      }
+    },
+    error: (err) => alert(err.error?.message || 'Error al comentar')
+  });
+}
 
-  toggleLike(postId: number) {
+  toggleLike(postId: string) {
     const post = this.posts.find(p => p.id === postId);
     if (!post) return;
 
@@ -511,7 +499,7 @@ cursorPosition = 0;
     }
   }
 
-  toggleRepost(postId: number) {
+  toggleRepost(postId: string) {
     const post = this.posts.find(p => p.id === postId);
     if (!post) return;
 
@@ -557,61 +545,7 @@ cursorPosition = 0;
       error: (err) => console.error('Error loading trending:', err)
     });
   }
-onPostInputChange(event: any) {
-  const textarea = event.target;
-  const text = textarea.value;
-  const cursorPos = textarea.selectionStart;
-  
-  console.log('Texto actual:', text);
-  console.log(' Cursor en:', cursorPos);
-  
-  // Buscar @ antes del cursor
-  const textBeforeCursor = text.substring(0, cursorPos);
-  const mentionMatch = textBeforeCursor.match(/@(\w*)$/);
-  
-  if (mentionMatch) {
-    this.mentionQuery = mentionMatch[1];
-    this.showMentionDropdown = true;
-    this.cursorPosition = cursorPos;
-    
-    console.log(' Mención detectada:', this.mentionQuery);
-    
-    // : Ya no buscamos manualmente, el dropdown se encarga con ngOnChanges
-  } else {
-    this.showMentionDropdown = false;
-    console.log(' No hay mención activa');
-  }
-}
 
-onMentionSelected(user: any) {
-  console.log('Usuario seleccionado para mención:', user);
-  
-  const textarea = document.querySelector('textarea[name="newPost"]') as HTMLTextAreaElement;
-  if (!textarea) {
-    console.error('No se encontró el textarea');
-    return;
-  }
-  
-  const text = textarea.value;
-  const beforeMention = text.substring(0, this.cursorPosition - this.mentionQuery.length - 1);
-  const afterMention = text.substring(this.cursorPosition);
-  
-  const newText = `${beforeMention}@${user.username} ${afterMention}`;
-  
-  console.log(' Texto antes:', text);
-  console.log(' Texto después:', newText);
-  
-  textarea.value = newText;
-  this.newPost = newText;
-  this.showMentionDropdown = false;
-  
-  // Mover cursor después de la mención + espacio
-  const newCursorPos = beforeMention.length + user.username.length + 2;
-  setTimeout(() => {
-    textarea.focus();
-    textarea.setSelectionRange(newCursorPos, newCursorPos);
-  }, 0);
-}
   loadSuggestions() {
     const headers: any = {};
     const token = localStorage.getItem('token');
@@ -632,7 +566,7 @@ onMentionSelected(user: any) {
     this.loadSuggestions();
   }
 
-  followUser(userId: number) {
+  followUser(userId: string) {
     const token = localStorage.getItem('token');
     const headers = { Authorization: `Bearer ${token}` };
 
@@ -708,11 +642,11 @@ onMentionSelected(user: any) {
     return suggestion.id;
   }
 
-  isCurrentUser(userId: number): boolean {
+  isCurrentUser(userId: string): boolean {
     return this.authService.currentUser()?.id === userId;
   }
 
-  toggleFollow(userId: number, post: any) {
+  toggleFollow(userId: string, post: any) {
     const token = localStorage.getItem('token');
     const headers = { Authorization: `Bearer ${token}` };
 
