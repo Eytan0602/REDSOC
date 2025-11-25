@@ -161,64 +161,7 @@ res.json({
   }
 });
 
-// Login/Registro con Google o GitHub (OAuth)
-/*app.post("/api/auth/social", async (req, res) => {
-  const { idToken } = req.body;
-  
-  try {
-    const decodedToken = await auth.verifyIdToken(idToken);
-    const uid = decodedToken.uid;
-    const userRecord = await auth.getUser(uid);
-    const userDoc = await db.collection("users").doc(uid).get();
-    
-    if (!userDoc.exists) {
-      const provider = userRecord.providerData[0]?.providerId || "unknown";
-      const username = userRecord.email?.split("@")[0] + Math.floor(Math.random() * 1000);
-      
-      await db.collection("users").doc(uid).set({
-        name: userRecord.displayName || "Usuario",
-        username,
-        email: userRecord.email || "",
-        bio: "",
-        avatar: userRecord.photoURL || "",
-        createdAt: admin.firestore.FieldValue.serverTimestamp(),
-        authProvider: provider,
-      });
-      
-      return res.json({
-        message: "Usuario registrado correctamente",
-        user: {
-          uid,
-          name: userRecord.displayName,
-          username,
-          email: userRecord.email,
-          avatar: userRecord.photoURL,
-        },
-        isNewUser: true,
-      });
-    }
-    
-    const userData = userDoc.data();
-    
-    res.json({
-      message: "Login exitoso",
-      user: {
-        uid,
-        name: userData.name,
-        username: userData.username,
-        email: userData.email,
-        avatar: userData.avatar,
-      },
-      isNewUser: false,
-    });
-  } catch (err) {
-    console.error("Error en login social:", err);
-    res.status(401).json({ 
-      message: "Error en autenticación social", 
-      error: err.message 
-    });
-  }
-});*/
+
 // ==================== AUTENTICACIÓN OAUTH ====================
 // Login con Google
 app.post("/api/auth/google", async (req, res) => {
@@ -364,12 +307,11 @@ app.get("/api/auth/me", async (req, res) => {
     if (!userDoc.exists) {
       return res.status(404).json({ message: "Usuario no encontrado" });
     }
-    
     const userData = userDoc.data();
     
     const followersSnap = await db
       .collection("follows")
-      .where("followedId", "==", uid)
+      .where("followedId", "==", uid) 
       .get();
     
     const followingSnap = await db
@@ -469,6 +411,7 @@ app.put("/api/users/username", async (req, res) => {
 });
 
 // Crear post
+
 app.post("/api/posts", async (req, res) => {
   try {
     const uid = await verifyToken(req.headers.authorization);
@@ -500,6 +443,8 @@ app.post("/api/posts", async (req, res) => {
     res.status(err.status || 500).json({ message: err.message });
   }
 });
+//borrar post
+
 app.delete("/api/posts/:id", async (req, res) => {
   console.log("\nDELETE POST INICIADO");
   
@@ -1283,7 +1228,7 @@ app.post("/api/conversations", async (req, res) => {
     if (currentUid === otherUserId) {
       return res.status(400).json({ message: "No puedes crear una conversación contigo mismo" });
     }
-    
+  
     const conversationSnap = await db
       .collection("conversations")
       .where("user1Id", "in", [currentUid, otherUserId])

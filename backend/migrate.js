@@ -13,7 +13,7 @@ admin.initializeApp({
 const firestore = admin.firestore();
 const auth = admin.auth();
 
-console.log("🔥 Firebase inicializado correctamente\n");
+console.log("Firebase inicializado correctamente\n");
 
 // -------------------- ABRIR SQLITE --------------------
 let sqliteDb;
@@ -30,7 +30,7 @@ const initSQLite = async () => {
 
 // 1️MIGRAR USUARIOS
 const migrateUsers = async () => {
-  console.log("📦 Migrando usuarios...");
+  console.log("Migrando usuarios...");
   
   const users = await sqliteDb.all("SELECT * FROM users");
   const userMapping = {}; // Mapeo de SQLite ID → Firebase UID
